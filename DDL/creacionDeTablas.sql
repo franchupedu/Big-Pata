@@ -1,3 +1,5 @@
+if object_id('SELECT_QUANTUM_LIBRARY.Dia_Reservado') is not null
+	DROP TABLE SELECT_QUANTUM_LIBRARY.Dia_Reservado;
 if object_id('SELECT_QUANTUM_LIBRARY.Estadia') is not null
 	DROP TABLE SELECT_QUANTUM_LIBRARY.Estadia;
 if object_id('SELECT_QUANTUM_LIBRARY.Pasaje') is not null
@@ -169,4 +171,12 @@ PRIMARY KEY (codigo)
 );
 
 
-
+CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Dia_Reservado](
+[codigo] [int] IDENTITY(1,1),
+[id_estadia] [int],
+[fecha] [date] NOT NULL,
+[id_habitacion] [int] NOT NULL,
+FOREIGN KEY(id_estadia) REFERENCES [SELECT_QUANTUM_LIBRARY].[Estadia](codigo),
+FOREIGN KEY(id_habitacion) REFERENCES [SELECT_QUANTUM_LIBRARY].[Habitacion](id_habitacion),
+PRIMARY KEY(codigo)
+);
