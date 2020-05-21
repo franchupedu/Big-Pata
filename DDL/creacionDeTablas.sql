@@ -37,26 +37,27 @@ CREATE SCHEMA [SELECT_QUANTUM_LIBRARY]
 GO
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Tipo_Habitacion](
-[codigo] [int] IDENTITY(1,1),
+[codigo] [int],
 [descripcion] [nvarchar] (255) NOT NULL,
 PRIMARY KEY(codigo)
 );
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Tipo_Butaca](
-[codigo] [int] IDENTITY(1,1),
+[codigo] [int] IDENTITY(1,1) ,
 [descripcion] [nvarchar] (255) NOT NULL,
 PRIMARY KEY(codigo)
 );
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Ruta_Aerea](
 [id_ruta_aerea] [int] IDENTITY(1,1),
+[codigo_ruta_aerea] [int],
 [ciudad_origen] [nvarchar] (255) NOT NULL,
 [ciudad_destino] [nvarchar] (255) NOT NULL,
 PRIMARY KEY(id_ruta_aerea)
 );
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Avion](
-[id_avion] [int] IDENTITY(1,1),
+[id_avion] [nvarchar] (255),
 [modelo] [nvarchar] (255) NOT NULL,
 PRIMARY KEY(id_avion)
 );
@@ -100,7 +101,6 @@ CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Habitacion](
 [id_habitacion] [int] IDENTITY(1,1),
 [piso] [int] NOT NULL,
 [numero][int] NOT NULL,
-[id_estadia] [int] NOT NULL, -- ES FK
 [tipo] [int] NOT NULL, 
 [frente] [nvarchar] (255) NOT NULL, 
 [costo_compra] [int] NOT NULL,
@@ -110,11 +110,11 @@ PRIMARY KEY(id_habitacion)
 );
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Vuelo](
-[codigo_vuelo] [int] IDENTITY(1,1),
+[codigo_vuelo] [int],
 [fecha_llegada] [date] NOT NULL,
 [fecha_salida] [date] NOT NULL,
 [id_ruta_aerea] [int] NOT NULL,
-[id_avion] [int] NOT NULL,
+[id_avion] [nvarchar] (255) NOT NULL,
 FOREIGN KEY(id_ruta_aerea) REFERENCES [SELECT_QUANTUM_LIBRARY].[Ruta_Aerea],
 FOREIGN KEY(id_avion) REFERENCES [SELECT_QUANTUM_LIBRARY].[Avion],
 PRIMARY KEY (codigo_vuelo)
@@ -162,20 +162,20 @@ CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Estadia](
 [cantidad_noches] [int] NOT NULL,
 [id_compra] [int] NOT NULL,
 [id_hotel] [int] NOT NULL,
-[id_nota_de_venta] [int] NOT NULL,
 [precio_final] [int] NOT NULL,
 FOREIGN KEY(id_compra) REFERENCES [SELECT_QUANTUM_LIBRARY].[Compra](numero),
 FOREIGN KEY(id_hotel) REFERENCES [SELECT_QUANTUM_LIBRARY].[Hotel](id_hotel),
-FOREIGN KEY(id_nota_de_venta) REFERENCES [SELECT_QUANTUM_LIBRARY].[Nota_De_Venta](id_nota_de_venta),
 PRIMARY KEY (codigo) 
 );
 
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Dia_Reservado](
 [codigo] [int] IDENTITY(1,1),
-[id_estadia] [int],
+[id_estadia] [int] NOT NULL,
 [fecha] [date] NOT NULL,
 [id_habitacion] [int] NOT NULL,
+[id_nota_de_venta] [int],
+FOREIGN KEY(id_nota_de_venta) REFERENCES[SELECT_QUANTUM_LIBRARY].[Nota_De_Venta](id_nota_de_venta),
 FOREIGN KEY(id_estadia) REFERENCES [SELECT_QUANTUM_LIBRARY].[Estadia](codigo),
 FOREIGN KEY(id_habitacion) REFERENCES [SELECT_QUANTUM_LIBRARY].[Habitacion](id_habitacion),
 PRIMARY KEY(codigo)
