@@ -1,7 +1,6 @@
 use GD1C2020
-select * from gd_esquema.Maestra
-Select * from  [SELECT_QUANTUM_LIBRARY].[Ruta_Aerea]
-SELECT * FROM  [SELECT_QUANTUM_LIBRARY].[Avion]
+
+
 /* Tipo de Habitacion*/
 insert into [SELECT_QUANTUM_LIBRARY].[Tipo_Habitacion] select 
 														distinct(TIPO_HABITACION_CODIGO),
@@ -10,9 +9,9 @@ insert into [SELECT_QUANTUM_LIBRARY].[Tipo_Habitacion] select
 														WHERE TIPO_HABITACION_CODIGO is not null 
 
 
-/*Habitacion*/
+/*Habitacion*/	/*XXX: puse distinct aca*/
 insert into [SELECT_QUANTUM_LIBRARY].[Habitacion] SELECT 
-														HABITACION_PISO,
+														distinct HABITACION_PISO,
 														HABITACION_NUMERO,
 														(select codigo from[SELECT_QUANTUM_LIBRARY].[Tipo_Habitacion] 
 															WHERE codigo = TIPO_HABITACION_CODIGO),
@@ -20,7 +19,7 @@ insert into [SELECT_QUANTUM_LIBRARY].[Habitacion] SELECT
 														HABITACION_COSTO,
 														HABITACION_PRECIO 
 														FROM gd_esquema.Maestra
-														WHERE HABITACION_NUMERO IS NOT NULL 
+														WHERE HABITACION_NUMERO IS NOT NULL
 /*Tipo de Butaca*/
 insert into [SELECT_QUANTUM_LIBRARY].[Tipo_Butaca] select 
 													distinct(BUTACA_TIPO) 
@@ -57,9 +56,28 @@ insert into [SELECT_QUANTUM_LIBRARY].[Ruta_Aerea] select
 														WHERE codigo_vuelo = VUELO_CODIGO)
 
 														FROM gd_esquema.Maestra
-														WHERE RUTA_AEREA_CODIGO IS NOT NULL
-														ORDER BY RUTA_AEREA_CODIGO																					
+														WHERE RUTA_AEREA_CODIGO IS NOT NULL																				
 													
+/*Butaca*/	
+/*XXX: aca tambien, el distinct es necesario xq x mas que dos vuelos referencien a la misma butaca, 
+esta solo tiene el tipo_de_butaca y el numero. modifique el DER, una butaca esta en varios pasajes.*/
+
+insert into [SELECT_QUANTUM_LIBRARY].[Butaca] select 
+													distinct (SELECT distinct codigo 
+													from [SELECT_QUANTUM_LIBRARY].[Tipo_Butaca] 
+													WHERE descripcion = BUTACA_TIPO),
+													BUTACA_NUMERO
+													FROM gd_esquema.Maestra
+													WHERE BUTACA_NUMERO is not null
+													Order by 1, 2
+
+INSERT INTO [SELECT_QUANTUM_LIBRARY].[Sucursal]	select 
+													DISTINCT SUCURSAL_MAIL,
+													SUCURSAL_DIR,
+													SUCURSAL_TELEFONO
+													FROM gd_esquema.Maestra
+													WHERE SUCURSAL_MAIL is not null							
+
 
 /*Pasaje*/ 
 /*Compra*/

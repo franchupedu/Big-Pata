@@ -57,9 +57,9 @@ PRIMARY KEY(id_avion)
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Butaca](
 [id_butaca] [int] IDENTITY(1,1),
-[tipo_de_butaca] [nvarchar] (255) NOT NULL,
+[tipo_de_butaca] [int] NOT NULL,
 [numero] [int] NOT NULL,
-FOREIGN KEY (id_butaca) REFERENCES [SELECT_QUANTUM_LIBRARY].[Tipo_Butaca](codigo),
+FOREIGN KEY (tipo_de_butaca) REFERENCES [SELECT_QUANTUM_LIBRARY].[Tipo_Butaca](codigo),
 PRIMARY KEY(id_butaca)
 );
 
