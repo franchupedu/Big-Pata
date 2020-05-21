@@ -8,6 +8,8 @@ if object_id('SELECT_QUANTUM_LIBRARY.Nota_De_Venta') is not null
 	DROP TABLE SELECT_QUANTUM_LIBRARY.Nota_De_Venta;
 if object_id('SELECT_QUANTUM_LIBRARY.Compra') is not null
 	DROP TABLE SELECT_QUANTUM_LIBRARY.Compra;
+if object_id('SELECT_QUANTUM_LIBRARY.Ruta_Aerea') is not null
+	DROP TABLE SELECT_QUANTUM_LIBRARY.Ruta_Aerea;
 if object_id('SELECT_QUANTUM_LIBRARY.Vuelo') is not null
 	DROP TABLE SELECT_QUANTUM_LIBRARY.Vuelo;
 if object_id('SELECT_QUANTUM_LIBRARY.Habitacion') is not null
@@ -22,8 +24,6 @@ if object_id('SELECT_QUANTUM_LIBRARY.Butaca') is not null
 	DROP TABLE SELECT_QUANTUM_LIBRARY.Butaca;
 if object_id('SELECT_QUANTUM_LIBRARY.Avion') is not null
 	DROP TABLE SELECT_QUANTUM_LIBRARY.Avion;
-if object_id('SELECT_QUANTUM_LIBRARY.Ruta_Aerea') is not null
-	DROP TABLE SELECT_QUANTUM_LIBRARY.Ruta_Aerea;
 if object_id('SELECT_QUANTUM_LIBRARY.Tipo_Butaca') is not null
 	DROP TABLE SELECT_QUANTUM_LIBRARY.Tipo_Butaca;
 if object_id('SELECT_QUANTUM_LIBRARY.Tipo_Habitacion') is not null
@@ -48,13 +48,6 @@ CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Tipo_Butaca](
 PRIMARY KEY(codigo)
 );
 
-CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Ruta_Aerea](
-[id_ruta_aerea] [int] IDENTITY(1,1),
-[codigo_ruta_aerea] [int],
-[ciudad_origen] [nvarchar] (255) NOT NULL,
-[ciudad_destino] [nvarchar] (255) NOT NULL,
-PRIMARY KEY(id_ruta_aerea)
-);
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Avion](
 [id_avion] [nvarchar] (255),
@@ -113,11 +106,19 @@ CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Vuelo](
 [codigo_vuelo] [int],
 [fecha_llegada] [date] NOT NULL,
 [fecha_salida] [date] NOT NULL,
-[id_ruta_aerea] [int] NOT NULL,
 [id_avion] [nvarchar] (255) NOT NULL,
-FOREIGN KEY(id_ruta_aerea) REFERENCES [SELECT_QUANTUM_LIBRARY].[Ruta_Aerea],
 FOREIGN KEY(id_avion) REFERENCES [SELECT_QUANTUM_LIBRARY].[Avion],
 PRIMARY KEY (codigo_vuelo)
+);
+
+CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Ruta_Aerea](
+[id_ruta_aerea] [int] IDENTITY(1,1),
+[codigo_ruta_aerea] [int],
+[ciudad_origen] [nvarchar] (255) NOT NULL,
+[ciudad_destino] [nvarchar] (255) NOT NULL,
+[id_vuelo] [int],
+FOREIGN KEY (id_vuelo) REFERENCES [SELECT_QUANTUM_LIBRARY].[Vuelo](codigo_vuelo),
+PRIMARY KEY(id_ruta_aerea)
 );
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Compra](
