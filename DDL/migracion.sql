@@ -1,5 +1,12 @@
 use GD1C2020
 
+select count(*)
+from gd_esquema.Maestra where HABITACION_PISO is not null
+group by HOTEL_CALLE, HOTEL_NRO_CALLE, HABITACION_PISO, HABITACION_COSTO, HABITACION_FRENTE, HABITACION_NUMERO, 
+HABITACION_PRECIO, TIPO_HABITACION_CODIGO, TIPO_HABITACION_DESC
+
+select AVION_IDENTIFICADOR, AVION_MODELO from gd_esquema.Maestra
+
 
 /* Tipo de Habitacion*/
 insert into [SELECT_QUANTUM_LIBRARY].[Tipo_Habitacion] select 
@@ -11,7 +18,7 @@ insert into [SELECT_QUANTUM_LIBRARY].[Tipo_Habitacion] select
 
 /*Habitacion*/	/*XXX: puse distinct aca*/
 insert into [SELECT_QUANTUM_LIBRARY].[Habitacion] SELECT 
-														distinct HABITACION_PISO,
+														HABITACION_PISO,
 														HABITACION_NUMERO,
 														(select codigo from[SELECT_QUANTUM_LIBRARY].[Tipo_Habitacion] 
 															WHERE codigo = TIPO_HABITACION_CODIGO),
@@ -20,6 +27,13 @@ insert into [SELECT_QUANTUM_LIBRARY].[Habitacion] SELECT
 														HABITACION_PRECIO 
 														FROM gd_esquema.Maestra
 														WHERE HABITACION_NUMERO IS NOT NULL
+														group by HABITACION_PISO,
+														HABITACION_NUMERO,													
+														HABITACION_FRENTE, HOTEL_CALLE, HOTEL_NRO_CALLE, HOTEL_CANTIDAD_ESTRELLAS,
+														HABITACION_COSTO, 
+														HABITACION_PRECIO, TIPO_HABITACION_CODIGO
+														order by HABITACION_PISO,
+														HABITACION_NUMERO
 /*Tipo de Butaca*/
 insert into [SELECT_QUANTUM_LIBRARY].[Tipo_Butaca] select 
 													distinct(BUTACA_TIPO) 
