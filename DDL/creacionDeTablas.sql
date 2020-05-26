@@ -1,3 +1,5 @@
+USE GD1C2020;
+
 if object_id('SELECT_QUANTUM_LIBRARY.Dia_Reservado') is not null
 	DROP TABLE SELECT_QUANTUM_LIBRARY.Dia_Reservado;
 if object_id('SELECT_QUANTUM_LIBRARY.Estadia') is not null
@@ -78,14 +80,19 @@ PRIMARY KEY (id_sucursal)
 );
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Cliente](
-[DNI] [int] IDENTITY(1,1),
+[id_cliente] [int] IDENTITY(1,1),
+[DNI] [int] NOT NULL,
 [nombre] [nvarchar](255) NOT NULL,
 [apellido] [nvarchar](255) NOT NULL,
 [mail] [nvarchar](255),
 [telefono] [int],
 [fecha_de_nacimiento] [date] NOT NULL
-PRIMARY KEY (DNI)
+PRIMARY KEY (id_cliente)
 );
+
+CREATE INDEX IX_Cliente_DNI ON [SELECT_QUANTUM_LIBRARY].[Cliente] (DNI) WHERE DNI IS NOT NULL
+CREATE INDEX IX_Cliente_Mail ON [SELECT_QUANTUM_LIBRARY].[Cliente] (mail) WHERE mail IS NOT NULL
+
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Hotel](
 [id_hotel] [int] IDENTITY(1,1),
@@ -142,7 +149,8 @@ PRIMARY KEY(id_empresa)
 );
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Compra](
-[id_compra][int]IDENTITY(1,1),
+[id_compra][int] IDENTITY(1,1),
+[numero_compra][int] NOT NULL,
 [fecha] [date] NOT NULL,
 [id_empresa][int] NOT NULL,
 [costo_total][int] NOT NULL,
@@ -154,23 +162,24 @@ PRIMARY KEY (id_compra)
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Nota_De_Venta](
 [id_nota_de_venta][int]IDENTITY(1,1),
+[numero_venta] [int] NOT NULL,
 [id_cliente] [int] NOT NULL,
 [id_sucursal] [int] NOT NULL,
-[fecha_de_salida] [date] NOT NULL,
+[fecha] [date] NOT NULL,
 [precio_total] [int] NOT NULL,
-FOREIGN KEY (id_cliente) REFERENCES[SELECT_QUANTUM_LIBRARY].[Cliente](DNI),
+FOREIGN KEY (id_cliente) REFERENCES[SELECT_QUANTUM_LIBRARY].[Cliente](id_cliente),
 FOREIGN KEY (id_sucursal) REFERENCES[SELECT_QUANTUM_LIBRARY].[Sucursal](id_sucursal),
 PRIMARY KEY (id_nota_de_venta)
 )
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Pasaje](
-[codigo_pasaje] [int] IDENTITY(1,1),
+[codigo_pasaje] [int],
 [codigo_vuelo] [int] NOT NULL,
 [fecha_compra] [date] NOT NULL,
 [id_butaca] [int] NOT NULL,
 [id_compra] [int] NOT NULL,
 [costo_compra] [int] NOT NULL,
-[id_nota_de_venta] [int] NOT NULL,
+[id_nota_de_venta] [int],
 [precio_venta] [int] NOT NULL,
 FOREIGN KEY(codigo_vuelo) REFERENCES [SELECT_QUANTUM_LIBRARY].[Vuelo](codigo_vuelo),
 FOREIGN KEY(id_butaca) REFERENCES [SELECT_QUANTUM_LIBRARY].[Butaca](id_butaca),
@@ -186,23 +195,13 @@ CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Estadia](
 [fecha_inicio] [date] NOT NULL,
 [cantidad_noches] [int] NOT NULL,
 [id_habitacion] [int] NOT NULL,
-[id_compra] [int] NOT NULL,
 [precio_final] [int] NOT NULL,
+[id_compra] [int] NOT NULL,
 [costo_compra_total] [int] NOT NULL,
+[id_nota_de_venta] [int],
 FOREIGN KEY(id_habitacion) REFERENCES [SELECT_QUANTUM_LIBRARY].[Habitacion](id_habitacion),
 FOREIGN KEY(id_compra) REFERENCES [SELECT_QUANTUM_LIBRARY].[Compra](id_compra),
+FOREIGN KEY(id_nota_de_venta) REFERENCES [SELECT_QUANTUM_LIBRARY].[Nota_De_Venta](id_nota_de_venta),
 PRIMARY KEY (id_estadia) 
 );
 
-
-CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Dia_Reservado](
-[codigo] [int] IDENTITY(1,1),
-[id_estadia] [int] NOT NULL,
-[fecha] [date] NOT NULL,
-[precio_venta_dia] [int] NOT NULL,
-[costo_compra_dia] [int] NOT NULL,
-[id_nota_de_venta] [int],
-FOREIGN KEY(id_nota_de_venta) REFERENCES[SELECT_QUANTUM_LIBRARY].[Nota_De_Venta](id_nota_de_venta),
-FOREIGN KEY(id_estadia) REFERENCES [SELECT_QUANTUM_LIBRARY].[Estadia](id_estadia),
-PRIMARY KEY(codigo)
-);
