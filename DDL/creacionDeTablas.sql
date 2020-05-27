@@ -43,17 +43,16 @@ CREATE SCHEMA [SELECT_QUANTUM_LIBRARY]
 GO
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Tipo_Habitacion](
-[codigo] [int],
+[codigo] [int] NOT NULL,
 [descripcion] [nvarchar] (255) NOT NULL,
 PRIMARY KEY(codigo)
 );
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Tipo_Butaca](
-[codigo] [int] IDENTITY(1,1) ,
+[codigo] [int] IDENTITY(1,1),
 [descripcion] [nvarchar] (255) NOT NULL,
 PRIMARY KEY(codigo)
 );
-
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Avion](
 [id_avion] [nvarchar] (255) NOT NULL,
@@ -73,9 +72,9 @@ PRIMARY KEY(id_butaca)
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Sucursal](
 [id_sucursal] [int] IDENTITY(1,1),
-[mail] [nvarchar] (255),
+[mail] [nvarchar] (255) NOT NULL,
 [direccion] [nvarchar] (255) NOT NULL,
-[telefono] [int] ,
+[telefono] [int] NOT NULL,
 PRIMARY KEY (id_sucursal)
 );
 
@@ -84,15 +83,11 @@ CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Cliente](
 [DNI] [int] NOT NULL,
 [nombre] [nvarchar](255) NOT NULL,
 [apellido] [nvarchar](255) NOT NULL,
-[mail] [nvarchar](255),
-[telefono] [int],
+[mail] [nvarchar](255) NOT NULL,
+[telefono] [int] NOT NULL,
 [fecha_de_nacimiento] [date] NOT NULL
 PRIMARY KEY (id_cliente)
 );
-
-CREATE INDEX IX_Cliente_DNI ON [SELECT_QUANTUM_LIBRARY].[Cliente] (DNI) WHERE DNI IS NOT NULL
-CREATE INDEX IX_Cliente_Mail ON [SELECT_QUANTUM_LIBRARY].[Cliente] (mail) WHERE mail IS NOT NULL
-
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Hotel](
 [id_hotel] [int] IDENTITY(1,1),
@@ -105,7 +100,7 @@ PRIMARY KEY(id_hotel)
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Habitacion](
 [id_habitacion] [int] IDENTITY(1,1),
-[id_hotel] [int] not NULL,
+[id_hotel] [int] NOT NULL,
 [piso] [int] NOT NULL,
 [numero][int] NOT NULL,
 [tipo] [int] NOT NULL, 
@@ -116,7 +111,7 @@ PRIMARY KEY(id_habitacion)
 );
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Vuelo](
-[codigo_vuelo] [int],
+[codigo_vuelo] [int] NOT NULL,
 [fecha_llegada] [date] NOT NULL,
 [fecha_salida] [date] NOT NULL,
 [id_avion] [nvarchar] (255) NOT NULL,
@@ -132,7 +127,7 @@ PRIMARY KEY(id_ciudad)
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Ruta_Aerea](
 [id_ruta_aerea] [int] IDENTITY(1,1),
-[codigo_ruta_aerea] [int],
+[codigo_ruta_aerea] [int] NOT NULL,
 [ciudad_origen] [int] NOT NULL,
 [ciudad_destino] [int] NOT NULL,
 [id_vuelo] [int] NOT NULL,
@@ -156,9 +151,7 @@ CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Compra](
 [costo_total][int] NOT NULL,
 FOREIGN KEY (id_empresa) REFERENCES[SELECT_QUANTUM_LIBRARY].[Empresa](id_empresa),
 PRIMARY KEY (id_compra)
-)
-
-
+);
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Nota_De_Venta](
 [id_nota_de_venta][int]IDENTITY(1,1),
@@ -170,10 +163,10 @@ CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Nota_De_Venta](
 FOREIGN KEY (id_cliente) REFERENCES[SELECT_QUANTUM_LIBRARY].[Cliente](id_cliente),
 FOREIGN KEY (id_sucursal) REFERENCES[SELECT_QUANTUM_LIBRARY].[Sucursal](id_sucursal),
 PRIMARY KEY (id_nota_de_venta)
-)
+);
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Pasaje](
-[codigo_pasaje] [int],
+[codigo_pasaje] [int] NOT NULL,
 [codigo_vuelo] [int] NOT NULL,
 [fecha_compra] [date] NOT NULL,
 [id_butaca] [int] NOT NULL,
@@ -187,7 +180,6 @@ FOREIGN KEY(id_compra) REFERENCES [SELECT_QUANTUM_LIBRARY].[Compra](id_compra),
 FOREIGN KEY(id_nota_de_venta) REFERENCES [SELECT_QUANTUM_LIBRARY].[Nota_De_Venta](id_nota_de_venta),
 PRIMARY KEY(codigo_pasaje)
 );
-
 
 CREATE TABLE [SELECT_QUANTUM_LIBRARY].[Estadia](
 [id_estadia] [int] IDENTITY(1,1),
@@ -205,3 +197,6 @@ FOREIGN KEY(id_nota_de_venta) REFERENCES [SELECT_QUANTUM_LIBRARY].[Nota_De_Venta
 PRIMARY KEY (id_estadia) 
 );
 
+CREATE INDEX IX_Cliente_DNI ON [SELECT_QUANTUM_LIBRARY].[Cliente] (DNI) WHERE DNI IS NOT NULL
+
+CREATE INDEX IX_Cliente_Mail ON [SELECT_QUANTUM_LIBRARY].[Cliente] (mail) WHERE mail IS NOT NULL

@@ -1,32 +1,32 @@
 use GD1C2020
 
-/*Estan faltando las siguientes tablas (por favor actualizar a medida que se avanza
-
-	Falta sacar repetidos en estadia y pasaje
-*/
+/*Estan faltando las siguientes tablas (por favor actualizar a medida que se avanza*/
 
 /*para probar*/
 
-/*SELECT COUNT(*) FROM gd_esquema.Maestra WHERE COMPRA_NUMERO IS NOT NULL GROUP BY COMPRA_NUMERO HAVING COUNT(*)>1 ORDER BY COMPRA_NUMERO 
+/*
+SELECT COUNT(*) FROM gd_esquema.Maestra WHERE COMPRA_NUMERO IS NOT NULL GROUP BY COMPRA_NUMERO HAVING COUNT(*)>1 ORDER BY COMPRA_NUMERO 
 
 SELECT COUNT(*) FROM gd_esquema.Maestra WHERE FACTURA_NRO IS NOT NULL GROUP BY FACTURA_NRO HAVING COUNT(*)>1 ORDER BY FACTURA_NRO 
 
 SELECT count(*) FROM gd_esquema.Maestra WHERE (FACTURA_NRO IS NOT NULL OR COMPRA_NUMERO IS NOT NULL) AND ESTADIA_CODIGO IS NOT NULL ORDER BY COMPRA_NUMERO, FACTURA_NRO
 
 SELECT * FROM gd_esquema.Maestra
-SELECT * from [SELECT_QUANTUM_LIBRARY].[Cliente] order by mail
 
+SELECT * from [SELECT_QUANTUM_LIBRARY].[Cliente] order by mail
 
 SELECT COUNT(*) FROM [SELECT_QUANTUM_LIBRARY].Habitacion HAB 
 GROUP BY HAB.id_habitacion, HAB.id_hotel
 HAVING COUNT(*)>1
 */
+
 /*
 SELECT numero_venta FROM [SELECT_QUANTUM_LIBRARY].Nota_De_Venta GROUP BY numero_venta HAVING COUNT (*) >1
 
 SELECT PASAJE_CODIGO, FACTURA_NRO FROM gd_esquema.Maestra
 WHERE PASAJE_CODIGO IS NOT NULL ORDER BY PASAJE_CODIGO
 */
+
 /*inicio de la migracion*/
 
 /* Ciudad */
@@ -36,11 +36,15 @@ insert into [SELECT_QUANTUM_LIBRARY].[Ciudad] select distinct
 												from gd_esquema.Maestra
 												where RUTA_AEREA_CIU_ORIG is not null
 
+/*SELECT COUNT(*) FROM SELECT_QUANTUM_LIBRARY.Ciudad C GROUP BY C.nombre HAVING COUNT(*) > 1*/
+
 /*Tipo de Butaca*/
 insert into [SELECT_QUANTUM_LIBRARY].[Tipo_Butaca] select 
 													distinct(BUTACA_TIPO) 
 													FROM gd_esquema.Maestra
 													WHERE BUTACA_TIPO is not null
+
+/*SELECT * FROM SELECT_QUANTUM_LIBRARY.Tipo_Butaca*/
 
 /* Tipo de Habitacion*/
 insert into [SELECT_QUANTUM_LIBRARY].[Tipo_Habitacion] select 
@@ -49,6 +53,8 @@ insert into [SELECT_QUANTUM_LIBRARY].[Tipo_Habitacion] select
 														FROM gd_esquema.Maestra 
 														WHERE TIPO_HABITACION_CODIGO is not null
 
+/*SELECT * FROM SELECT_QUANTUM_LIBRARY.Tipo_Habitacion*/
+
 /*Avion*/
 insert into [SELECT_QUANTUM_LIBRARY].[Avion] SELECT 
 													distinct(AVION_IDENTIFICADOR),
@@ -56,11 +62,15 @@ insert into [SELECT_QUANTUM_LIBRARY].[Avion] SELECT
 													FROM gd_esquema.Maestra
 													WHERE AVION_IDENTIFICADOR IS NOT NULL
 
+/*SELECT COUNT(*) FROM SELECT_QUANTUM_LIBRARY.Avion A GROUP BY A.id_avion HAVING COUNT(*) > 1*/
+
 /*Vuelos*/
 insert into [SELECT_QUANTUM_LIBRARY].[Vuelo]  select VUELO_CODIGO, VUELO_FECHA_SALUDA, VUELO_FECHA_LLEGADA, AVION_IDENTIFICADOR 
 												from gd_esquema.Maestra 
 												where VUELO_FECHA_SALUDA is not null
 												group by VUELO_CODIGO, VUELO_FECHA_SALUDA, VUELO_FECHA_LLEGADA, AVION_IDENTIFICADOR 	
+
+/*SELECT COUNT(*) FROM SELECT_QUANTUM_LIBRARY.Vuelo V GROUP BY V.codigo_vuelo HAVING COUNT(*) > 1*/
 
 /*Hotel*/
 insert into [SELECT_QUANTUM_LIBRARY].[Hotel] SELECT 
@@ -70,7 +80,7 @@ insert into [SELECT_QUANTUM_LIBRARY].[Hotel] SELECT
 													FROM gd_esquema.Maestra
 													WHERE HOTEL_CALLE IS NOT NULL
 													
-													
+/*SELECT COUNT(*) FROM SELECT_QUANTUM_LIBRARY.Hotel H GROUP BY H.calle, H.nro_calle HAVING COUNT(*) > 1*/
 
 /*Habitacion*/
 insert into [SELECT_QUANTUM_LIBRARY].[Habitacion] SELECT 
@@ -84,6 +94,7 @@ insert into [SELECT_QUANTUM_LIBRARY].[Habitacion] SELECT
 														FROM gd_esquema.Maestra
 														WHERE HABITACION_NUMERO IS NOT NULL
 													
+/*SELECT COUNT(*) FROM SELECT_QUANTUM_LIBRARY.Habitacion H GROUP BY H.id_hotel, H.numero HAVING COUNT(*) > 1*/
 										
 /*Ruta aerea*/
 insert into [SELECT_QUANTUM_LIBRARY].[Ruta_Aerea] select
@@ -98,11 +109,12 @@ insert into [SELECT_QUANTUM_LIBRARY].[Ruta_Aerea] select
 
 														FROM gd_esquema.Maestra
 														WHERE RUTA_AEREA_CODIGO IS NOT NULL																
-													
+										
+/*SELECT * FROM SELECT_QUANTUM_LIBRARY.Ruta_Aerea R ORDER BY R.codigo_ruta_aerea, R.ciudad_origen, R.ciudad_destino, R.id_vuelo*/
+
 /*Butaca*/	
 /*XXX: aca tambien, el distinct es necesario xq x mas que dos vuelos referencien a la misma butaca, 
 esta solo tiene el tipo_de_butaca y el numero. modifique el DER, una butaca esta en varios pasajes.*/
-
 insert into [SELECT_QUANTUM_LIBRARY].[Butaca] select 
 													distinct (SELECT distinct codigo 
 													from [SELECT_QUANTUM_LIBRARY].[Tipo_Butaca] 
@@ -115,6 +127,8 @@ insert into [SELECT_QUANTUM_LIBRARY].[Butaca] select
 													FROM gd_esquema.Maestra
 													WHERE BUTACA_NUMERO is not null
 
+/*SELECT COUNT(*) FROM SELECT_QUANTUM_LIBRARY.Butaca B GROUP BY B.numero, B.id_avion, B.tipo_de_butaca HAVING COUNT(*) > 1*/
+
 /*Sucursal*/
 INSERT INTO [SELECT_QUANTUM_LIBRARY].[Sucursal]	select 
 													DISTINCT SUCURSAL_MAIL,
@@ -123,6 +137,7 @@ INSERT INTO [SELECT_QUANTUM_LIBRARY].[Sucursal]	select
 													FROM gd_esquema.Maestra
 													WHERE SUCURSAL_MAIL is not null							
 
+/*SELECT * FROM SELECT_QUANTUM_LIBRARY.Sucursal*/
 
 /*Cliente*/
 INSERT INTO [SELECT_QUANTUM_LIBRARY].[Cliente] SELECT
@@ -135,11 +150,15 @@ INSERT INTO [SELECT_QUANTUM_LIBRARY].[Cliente] SELECT
 													FROM gd_esquema.Maestra
 													WHERE CLIENTE_DNI IS NOT NULL
 
+/*SELECT COUNT(*) FROM SELECT_QUANTUM_LIBRARY.Cliente C GROUP BY C.DNI, C.nombre HAVING COUNT(*) > 1*/
+
 /* Empresa */
 INSERT INTO [SELECT_QUANTUM_LIBRARY].[Empresa] SELECT
 												DISTINCT EMPRESA_RAZON_SOCIAL
 												FROM gd_esquema.Maestra
 												WHERE EMPRESA_RAZON_SOCIAL IS NOT NULL
+
+/*SELECT COUNT(*) FROM SELECT_QUANTUM_LIBRARY.Empresa E GROUP BY E.nombre HAVING COUNT(*) > 1*/
 
 /* Compra */
 INSERT INTO [SELECT_QUANTUM_LIBRARY].Compra SELECT
@@ -154,6 +173,8 @@ INSERT INTO [SELECT_QUANTUM_LIBRARY].Compra SELECT
 											)
 											FROM gd_esquema.Maestra g2
 											WHERE COMPRA_NUMERO IS NOT NULL
+
+/*SELECT COUNT(*) FROM SELECT_QUANTUM_LIBRARY.Compra C GROUP BY C.numero_compra HAVING COUNT(*) > 1*/
 
 /* Nota de Venta */
 /* Sumamos el pasaje y las habitaciones xq la factura es o solo pasaje o solo habitacion*/
@@ -173,7 +194,7 @@ INSERT INTO [SELECT_QUANTUM_LIBRARY].[Nota_De_Venta] SELECT
 													FROM gd_esquema.Maestra
 													WHERE FACTURA_NRO IS NOT NULL
 
-
+/*SELECT COUNT(*) FROM SELECT_QUANTUM_LIBRARY.Nota_De_Venta N GROUP BY N.numero_venta HAVING COUNT(*) > 1*/
 
 /* Pasaje */
 INSERT INTO [SELECT_QUANTUM_LIBRARY].[Pasaje] SELECT
@@ -195,14 +216,16 @@ INSERT INTO [SELECT_QUANTUM_LIBRARY].[Pasaje] SELECT
 												FROM gd_esquema.Maestra
 												WHERE PASAJE_CODIGO IS NOT NULL												
 
-UPDATE [SELECT_QUANTUM_LIBRARY].[Pasaje] 
-SET id_nota_de_venta = (SELECT id_nota_de_venta FROM [SELECT_QUANTUM_LIBRARY].Nota_De_Venta WHERE numero_venta = mas.FACTURA_NRO)
-FROM [SELECT_QUANTUM_LIBRARY].[Pasaje] pas
-JOIN gd_esquema.Maestra mas ON mas.PASAJE_CODIGO = pas.codigo_pasaje
+UPDATE [SELECT_QUANTUM_LIBRARY].[Pasaje]
+												SET id_nota_de_venta = (SELECT id_nota_de_venta FROM [SELECT_QUANTUM_LIBRARY].Nota_De_Venta WHERE numero_venta = mas.FACTURA_NRO)
+												FROM [SELECT_QUANTUM_LIBRARY].[Pasaje] pas
+												JOIN gd_esquema.Maestra mas ON mas.PASAJE_CODIGO = pas.codigo_pasaje
+												WHERE (SELECT id_nota_de_venta FROM [SELECT_QUANTUM_LIBRARY].Nota_De_Venta WHERE numero_venta = mas.FACTURA_NRO) IS NOT NULL
 
+/*SELECT COUNT(*) FROM SELECT_QUANTUM_LIBRARY.Pasaje P GROUP BY P.codigo_pasaje HAVING COUNT(*) > 1*/
 
 /* Estadia */
-INSERT INTO [SELECT_QUANTUM_LIBRARY].Estadia SELECT
+INSERT INTO [SELECT_QUANTUM_LIBRARY].[Estadia] SELECT
 												DISTINCT ESTADIA_CODIGO,
 												ESTADIA_FECHA_INI,
 												ESTADIA_CANTIDAD_NOCHES,
@@ -223,8 +246,10 @@ INSERT INTO [SELECT_QUANTUM_LIBRARY].Estadia SELECT
 												FROM gd_esquema.Maestra
 												WHERE ESTADIA_CODIGO IS NOT NULL
 
+UPDATE [SELECT_QUANTUM_LIBRARY].[Estadia]
+												SET id_nota_de_venta = (SELECT id_nota_de_venta FROM [SELECT_QUANTUM_LIBRARY].Nota_De_Venta WHERE numero_venta = mas.FACTURA_NRO)
+												FROM [SELECT_QUANTUM_LIBRARY].[Estadia] est
+												JOIN gd_esquema.Maestra mas ON mas.ESTADIA_CODIGO = est.codigo
+												WHERE (SELECT id_nota_de_venta FROM [SELECT_QUANTUM_LIBRARY].Nota_De_Venta WHERE numero_venta = mas.FACTURA_NRO) IS NOT NULL
 
-UPDATE [SELECT_QUANTUM_LIBRARY].[Estadia] 
-SET id_nota_de_venta = (SELECT id_nota_de_venta FROM [SELECT_QUANTUM_LIBRARY].Nota_De_Venta WHERE numero_venta = mas.FACTURA_NRO)
-FROM [SELECT_QUANTUM_LIBRARY].[Estadia] est
-JOIN gd_esquema.Maestra mas ON mas.ESTADIA_CODIGO = est.codigo
+/*SELECT * FROM SELECT_QUANTUM_LIBRARY.Estadia*/
