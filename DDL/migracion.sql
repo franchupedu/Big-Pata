@@ -1,27 +1,31 @@
 USE GD1C2020;
 GO
 
+-- Se crea el Schema 
 CREATE SCHEMA SELECT_QUANTUM_LIBRARY;
 GO
 
+-- Se realiza la creacion de las tablas necesarias para la migracion
+-- Se crea la tabla tipo_habitacion
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Tipo_Habitacion (
 codigo INT NOT NULL,
 descripcion NVARCHAR (255) NOT NULL,
 PRIMARY KEY (codigo)
 );
-
+--Se crea la tabla Tipo_Butaca
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Tipo_Butaca (
 codigo INT IDENTITY (1,1),
 descripcion NVARCHAR (255) NOT NULL,
 PRIMARY KEY (codigo)
 );
-
+--Se crea la tabla Avion
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Avion (
 id_avion NVARCHAR (255) NOT NULL,
 modelo NVARCHAR (255) NOT NULL,
 PRIMARY KEY (id_avion)
 );
 
+--Se crea la tabla Butaca
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Butaca (
 id_butaca INT IDENTITY(1,1),
 tipo_de_butaca INT NOT NULL,
@@ -32,6 +36,7 @@ FOREIGN KEY (id_avion) REFERENCES SELECT_QUANTUM_LIBRARY.Avion (id_avion),
 PRIMARY KEY (id_butaca)
 );
 
+--Se crea la tabla Sucursal
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Sucursal (
 id_sucursal INT IDENTITY (1,1),
 mail NVARCHAR (255) NOT NULL,
@@ -40,6 +45,7 @@ telefono INT NOT NULL,
 PRIMARY KEY (id_sucursal)
 );
 
+--Se crea la tabla Cliente
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Cliente (
 id_cliente INT IDENTITY (1,1),
 DNI INT NOT NULL,
@@ -51,6 +57,7 @@ fecha_de_nacimiento DATE NOT NULL
 PRIMARY KEY (id_cliente)
 );
 
+--Se crea la tabla Hotel
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Hotel (
 id_hotel INT IDENTITY (1,1),
 calle NVARCHAR (255) NOT NULL,
@@ -59,6 +66,7 @@ cantidad_estrellas INT NOT NULL
 PRIMARY KEY (id_hotel)
 );
 
+--Se crea la tabla Habitacion
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Habitacion (
 id_habitacion INT IDENTITY (1,1),
 id_hotel INT NOT NULL,
@@ -71,6 +79,7 @@ FOREIGN KEY (tipo) REFERENCES SELECT_QUANTUM_LIBRARY.Tipo_Habitacion (codigo),
 PRIMARY KEY (id_habitacion)
 );
 
+--Se crea la tabla Vuelo
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Vuelo (
 codigo_vuelo INT NOT NULL,
 fecha_llegada DATE NOT NULL,
@@ -80,12 +89,14 @@ FOREIGN KEY (id_avion) REFERENCES SELECT_QUANTUM_LIBRARY.Avion,
 PRIMARY KEY (codigo_vuelo)
 );
 
+--Se crea la tabla Ciudad
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Ciudad (
 id_ciudad INT IDENTITY (1,1),
 nombre NVARCHAR (255) NOT NULL,
 PRIMARY KEY (id_ciudad)
 );
 
+--Se crea la tabla Ruta_Aerea
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Ruta_Aerea (
 id_ruta_aerea INT IDENTITY (1,1),
 codigo_ruta_aerea INT NOT NULL,
@@ -98,12 +109,14 @@ FOREIGN KEY (ciudad_destino) REFERENCES SELECT_QUANTUM_LIBRARY.Ciudad (id_ciudad
 PRIMARY KEY (id_ruta_aerea)
 );
 
+--Se crea la tabla Empresa
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Empresa (
 id_empresa INT IDENTITY (1,1),
 nombre NVARCHAR (255) NOT NULL,
 PRIMARY KEY (id_empresa)
 );
 
+--Se crea la tabla Compra
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Compra (
 id_compra INT IDENTITY (1,1),
 numero_compra INT NOT NULL,
@@ -114,6 +127,7 @@ FOREIGN KEY (id_empresa) REFERENCES SELECT_QUANTUM_LIBRARY.Empresa (id_empresa),
 PRIMARY KEY (id_compra)
 );
 
+--Se crea la tabla Nota_De_Venta
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Nota_De_Venta (
 id_nota_de_venta INT IDENTITY (1,1),
 numero_venta INT NOT NULL,
@@ -126,6 +140,7 @@ FOREIGN KEY (id_sucursal) REFERENCES SELECT_QUANTUM_LIBRARY.Sucursal (id_sucursa
 PRIMARY KEY (id_nota_de_venta)
 );
 
+--Se crea la tabla Pasaje
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Pasaje (
 codigo_pasaje INT NOT NULL,
 codigo_vuelo INT NOT NULL,
@@ -142,6 +157,7 @@ FOREIGN KEY (id_nota_de_venta) REFERENCES SELECT_QUANTUM_LIBRARY.Nota_De_Venta (
 PRIMARY KEY (codigo_pasaje)
 );
 
+--Se crea la tabla Estadia
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Estadia (
 id_estadia INT IDENTITY (1,1),
 codigo INT NOT NULL,
@@ -158,36 +174,43 @@ FOREIGN KEY (id_nota_de_venta) REFERENCES SELECT_QUANTUM_LIBRARY.Nota_De_Venta (
 PRIMARY KEY (id_estadia)
 );
 
+-- Se crean los indices necesarios para reducir significativamente el tiempo de insersion de datos
 CREATE INDEX IX_Cliente_DNI ON SELECT_QUANTUM_LIBRARY.Cliente (DNI) WHERE DNI IS NOT NULL
 
 CREATE INDEX IX_Cliente_Mail ON SELECT_QUANTUM_LIBRARY.Cliente (mail) WHERE mail IS NOT NULL
 
 GO
 
+-- Se crea el procedure que Migrara todos los datos a las tablas creadas anteriormente, tomando los datos de la tabla maestra e insertandolos en las tablas especificas
 CREATE PROCEDURE SELECT_QUANTUM_LIBRARY.Migracion AS
 BEGIN
+	-- Se insertan todos los datos referentes a Ciudad
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Ciudad SELECT DISTINCT
 	RUTA_AEREA_CIU_ORIG
 	FROM gd_esquema.Maestra
 	WHERE RUTA_AEREA_CIU_ORIG IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Tipo_Butaca
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Tipo_Butaca SELECT DISTINCT
 	BUTACA_TIPO
 	FROM gd_esquema.Maestra
 	WHERE BUTACA_TIPO IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Tipo_Habitacion
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Tipo_Habitacion SELECT DISTINCT
 	TIPO_HABITACION_CODIGO,
 	TIPO_HABITACION_DESC 
 	FROM gd_esquema.Maestra 
 	WHERE TIPO_HABITACION_CODIGO IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Avion
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Avion SELECT DISTINCT
 	AVION_IDENTIFICADOR,
 	AVION_MODELO
 	FROM gd_esquema.Maestra
 	WHERE AVION_IDENTIFICADOR IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Vuelo
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Vuelo SELECT
 	VUELO_CODIGO,
 	VUELO_FECHA_SALUDA,
@@ -197,6 +220,7 @@ BEGIN
 	WHERE VUELO_FECHA_SALUDA IS NOT NULL
 	GROUP BY VUELO_CODIGO, VUELO_FECHA_SALUDA, VUELO_FECHA_LLEGADA, AVION_IDENTIFICADOR 	
 
+	-- Se insertan todos los datos referentes a Hotel
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Hotel SELECT DISTINCT
 	HOTEL_CALLE,
 	HOTEL_NRO_CALLE,
@@ -204,6 +228,7 @@ BEGIN
 	FROM gd_esquema.Maestra
 	WHERE HOTEL_CALLE IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Habitacion
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Habitacion SELECT DISTINCT
 	(SELECT id_hotel FROM SELECT_QUANTUM_LIBRARY.Hotel WHERE calle = HOTEL_CALLE AND nro_calle = HOTEL_NRO_CALLE),
 	HABITACION_PISO,
@@ -213,6 +238,7 @@ BEGIN
 	FROM gd_esquema.Maestra
 	WHERE HABITACION_NUMERO IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Ruta_Aerea
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Ruta_Aerea SELECT DISTINCT
 	RUTA_AEREA_CODIGO,
 	(SELECT id_ciudad FROM SELECT_QUANTUM_LIBRARY.Ciudad WHERE nombre = RUTA_AEREA_CIU_ORIG),
@@ -221,6 +247,7 @@ BEGIN
 	FROM gd_esquema.Maestra
 	WHERE RUTA_AEREA_CODIGO IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Butaca
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Butaca SELECT DISTINCT
 	(SELECT DISTINCT codigo FROM SELECT_QUANTUM_LIBRARY.Tipo_Butaca WHERE descripcion = BUTACA_TIPO),
 	BUTACA_NUMERO,
@@ -228,6 +255,7 @@ BEGIN
 	FROM gd_esquema.Maestra
 	WHERE BUTACA_NUMERO IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Sucursal
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Sucursal SELECT DISTINCT
 	SUCURSAL_MAIL,
 	SUCURSAL_DIR,
@@ -235,6 +263,7 @@ BEGIN
 	FROM gd_esquema.Maestra
 	WHERE SUCURSAL_MAIL IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Cliente
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Cliente SELECT DISTINCT
 	CLIENTE_DNI,
 	CLIENTE_NOMBRE,
@@ -245,11 +274,13 @@ BEGIN
 	FROM gd_esquema.Maestra
 	WHERE CLIENTE_DNI IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Empresa
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Empresa SELECT DISTINCT
 	EMPRESA_RAZON_SOCIAL
 	FROM gd_esquema.Maestra
 	WHERE EMPRESA_RAZON_SOCIAL IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Compra
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Compra SELECT DISTINCT
 	COMPRA_NUMERO,
 	COMPRA_FECHA,
@@ -259,6 +290,7 @@ BEGIN
 	FROM gd_esquema.Maestra M2
 	WHERE COMPRA_NUMERO IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Nota_De_Venta
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Nota_De_Venta SELECT DISTINCT
 	FACTURA_NRO,
 	(SELECT id_cliente FROM SELECT_QUANTUM_LIBRARY.Cliente WHERE CLIENTE_DNI = DNI AND mail = CLIENTE_MAIL),
@@ -268,6 +300,7 @@ BEGIN
 	FROM gd_esquema.Maestra
 	WHERE FACTURA_NRO IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Pasaje
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Pasaje SELECT DISTINCT
 	PASAJE_CODIGO,
 	VUELO_CODIGO,
@@ -281,11 +314,13 @@ BEGIN
 	FROM gd_esquema.Maestra
 	WHERE PASAJE_CODIGO IS NOT NULL
 
+	-- Se actualizan los datos referentes a Pasaje para asi obtener todos los pasajes que fueron vendidos
 	UPDATE SELECT_QUANTUM_LIBRARY.Pasaje SET id_nota_de_venta =
 	(SELECT id_nota_de_venta FROM SELECT_QUANTUM_LIBRARY.Nota_De_Venta WHERE numero_venta = M.FACTURA_NRO)
 	FROM SELECT_QUANTUM_LIBRARY.Pasaje P JOIN gd_esquema.Maestra M ON M.PASAJE_CODIGO = P.codigo_pasaje
 	WHERE (SELECT id_nota_de_venta FROM SELECT_QUANTUM_LIBRARY.Nota_De_Venta WHERE numero_venta = M.FACTURA_NRO) IS NOT NULL
 
+	-- Se insertan todos los datos referentes a Estadia
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Estadia SELECT DISTINCT
 	ESTADIA_CODIGO,
 	ESTADIA_FECHA_INI,
@@ -299,11 +334,12 @@ BEGIN
 	FROM gd_esquema.Maestra
 	WHERE ESTADIA_CODIGO IS NOT NULL
 
+	-- Se actualizan los datos referentes a Estadia para asi obtener todos las estadias que fueron vendidas
 	UPDATE SELECT_QUANTUM_LIBRARY.Estadia SET id_nota_de_venta =
 	(SELECT id_nota_de_venta FROM SELECT_QUANTUM_LIBRARY.Nota_De_Venta WHERE numero_venta = M.FACTURA_NRO)
 	FROM SELECT_QUANTUM_LIBRARY.Estadia E JOIN gd_esquema.Maestra M ON M.ESTADIA_CODIGO = E.codigo
 	WHERE (SELECT id_nota_de_venta FROM SELECT_QUANTUM_LIBRARY.Nota_De_Venta WHERE numero_venta = M.FACTURA_NRO) IS NOT NULL
 END
 GO
-
+-- Se procede a ejecutar el Store Procedure para realizar la insercion normalizada de los datos
 EXECUTE SELECT_QUANTUM_LIBRARY.Migracion;
