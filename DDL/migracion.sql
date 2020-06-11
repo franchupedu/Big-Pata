@@ -174,14 +174,15 @@ FOREIGN KEY (id_nota_de_venta) REFERENCES SELECT_QUANTUM_LIBRARY.Nota_De_Venta (
 PRIMARY KEY (id_estadia)
 );
 
--- Se crean los indices necesarios para reducir significativamente el tiempo de insersion de datos
+-- Se crean los indices necesarios para reducir significativamente el tiempo de insersion de datos en la tabla cliente
 CREATE INDEX IX_Cliente_DNI ON SELECT_QUANTUM_LIBRARY.Cliente (DNI) WHERE DNI IS NOT NULL
 
 CREATE INDEX IX_Cliente_Mail ON SELECT_QUANTUM_LIBRARY.Cliente (mail) WHERE mail IS NOT NULL
 
 GO
 
--- Se crea el procedure que Migrara todos los datos a las tablas creadas anteriormente, tomando los datos de la tabla maestra e insertandolos en las tablas especificas
+-- Se crea el procedure que Migrara todos los datos a las tablas creadas anteriormente, 
+-- tomando los datos de la tabla maestra e insertandolos en las tablas especificas
 CREATE PROCEDURE SELECT_QUANTUM_LIBRARY.Migracion AS
 BEGIN
 	-- Se insertan todos los datos referentes a Ciudad
@@ -230,9 +231,12 @@ BEGIN
 
 	-- Se insertan todos los datos referentes a Habitacion
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Habitacion SELECT DISTINCT
+	-- Se realiza un subselect para matchear cada hotel ingresado en la tabla de hotel de nuestro schema	 
+	-- con el de la tabla maestra y asi sacar su id
 	(SELECT id_hotel FROM SELECT_QUANTUM_LIBRARY.Hotel WHERE calle = HOTEL_CALLE AND nro_calle = HOTEL_NRO_CALLE),
 	HABITACION_PISO,
 	HABITACION_NUMERO,
+	-- Idem con codigo del tipo de habitacion
 	(SELECT codigo FROM SELECT_QUANTUM_LIBRARY.Tipo_Habitacion WHERE codigo = TIPO_HABITACION_CODIGO),
 	HABITACION_FRENTE
 	FROM gd_esquema.Maestra
@@ -241,6 +245,8 @@ BEGIN
 	-- Se insertan todos los datos referentes a Ruta_Aerea
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Ruta_Aerea SELECT DISTINCT
 	RUTA_AEREA_CODIGO,
+	-- Se realiza dos subselect para matchear cada ciudad origen ingresado en la tabla de ciudad de nuestro schema	 
+	-- con el de la tabla maestra y asi sacar su id, y lo mismo con la ciudad destino
 	(SELECT id_ciudad FROM SELECT_QUANTUM_LIBRARY.Ciudad WHERE nombre = RUTA_AEREA_CIU_ORIG),
 	(SELECT id_ciudad FROM SELECT_QUANTUM_LIBRARY.Ciudad WHERE nombre = RUTA_AEREA_CIU_DEST),
 	VUELO_CODIGO
@@ -249,6 +255,9 @@ BEGIN
 
 	-- Se insertan todos los datos referentes a Butaca
 	INSERT INTO SELECT_QUANTUM_LIBRARY.Butaca SELECT DISTINCT
+	-- Realizamos un subselect de cada codigo de tipo de butaca distinto para insertar en la tabla butaca
+	-- en la cual tambien tiene que corresponder cada butaca con cada avion, o sea la butaca 3 del avion 1
+	-- es distinta de la butaca 3 del avion 2
 	(SELECT DISTINCT codigo FROM SELECT_QUANTUM_LIBRARY.Tipo_Butaca WHERE descripcion = BUTACA_TIPO),
 	BUTACA_NUMERO,
 	AVION_IDENTIFICADOR
@@ -285,6 +294,8 @@ BEGIN
 	COMPRA_NUMERO,
 	COMPRA_FECHA,
 	(SELECT id_empresa FROM SELECT_QUANTUM_LIBRARY.Empresa WHERE EMPRESA_RAZON_SOCIAL = nombre),
+	-- Consideramos que una compra en particular es o de un pasaje o de una estadia, ya que asi estaba dado en la
+	-- tabla maestra. Por esto es que buscamos en cada registro si es un pasaje o una estadia y sumamos sus valores
 	(SELECT SUM (ISNULL (PASAJE_COSTO, 0)) + SUM (ISNULL (HABITACION_COSTO, 0) * ISNULL (ESTADIA_CANTIDAD_NOCHES, 0)) 
 	FROM gd_esquema.Maestra M1 WHERE M1.COMPRA_NUMERO = M2.COMPRA_NUMERO)
 	FROM gd_esquema.Maestra M2
@@ -296,6 +307,7 @@ BEGIN
 	(SELECT id_cliente FROM SELECT_QUANTUM_LIBRARY.Cliente WHERE CLIENTE_DNI = DNI AND mail = CLIENTE_MAIL),
 	(SELECT id_sucursal FROM SELECT_QUANTUM_LIBRARY.Sucursal WHERE direccion = SUCURSAL_DIR),
 	FACTURA_FECHA,
+	-- La misma consideracion de compra, para la reventa
 	ISNULL (PASAJE_PRECIO, 0) + ISNULL (HABITACION_PRECIO * ESTADIA_CANTIDAD_NOCHES, 0)
 	FROM gd_esquema.Maestra
 	WHERE FACTURA_NRO IS NOT NULL
@@ -330,6 +342,8 @@ BEGIN
 	ESTADIA_CANTIDAD_NOCHES * HABITACION_PRECIO,
 	(SELECT id_compra FROM SELECT_QUANTUM_LIBRARY.Compra WHERE COMPRA_NUMERO = numero_compra),
 	ESTADIA_CANTIDAD_NOCHES * HABITACION_COSTO,
+	-- Como la estadia pudo o no haber sido revendida, primero insertamos los que no lo fueron 
+	-- (los que tienen el id nota de venta en null) y luego con un update insertamos los que si fueron vendidos
 	NULL
 	FROM gd_esquema.Maestra
 	WHERE ESTADIA_CODIGO IS NOT NULL
