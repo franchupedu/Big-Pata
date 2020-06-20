@@ -10,7 +10,6 @@ id_cliente INT IDENTITY (1,1),
 DNI INT NOT NULL,
 nombre NVARCHAR (255) NOT NULL,
 apellido NVARCHAR (255) NOT NULL,
-mail NVARCHAR (255) NOT NULL,
 telefono INT NOT NULL,
 fecha_de_nacimiento DATE NOT NULL
 PRIMARY KEY (id_cliente)
@@ -77,3 +76,19 @@ PRIMARY KEY (id_ruta_aerea)
 
 
 -- tipo de pasaje ??
+
+CREATE TABLE SELECT_QUANTUM_LIBRARY.DimTipo_Butaca (
+codigo INT IDENTITY (1,1),
+descripcion NVARCHAR (255) NOT NULL,
+PRIMARY KEY (codigo)
+);
+
+CREATE TABLE SELECT_QUANTUM_LIBRARY.DimButaca (
+id_butaca INT IDENTITY(1,1),
+tipo_de_butaca INT NOT NULL,
+numero INT NOT NULL,
+id_avion NVARCHAR (255) NOT NULL
+FOREIGN KEY (tipo_de_butaca) REFERENCES SELECT_QUANTUM_LIBRARY.Tipo_Butaca (codigo),
+FOREIGN KEY (id_avion) REFERENCES SELECT_QUANTUM_LIBRARY.Avion (id_avion),
+PRIMARY KEY (id_butaca)
+);
