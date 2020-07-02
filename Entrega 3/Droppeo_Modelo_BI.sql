@@ -18,3 +18,5 @@ if object_id('SELECT_QUANTUM_LIBRARY.Dim_Ruta_Aerea') is not null
 	DROP TABLE SELECT_QUANTUM_LIBRARY.Dim_Ruta_Aerea;
 if object_id('SELECT_QUANTUM_LIBRARY.Dim_Tipo_De_Pasaje') is not null
 	DROP TABLE SELECT_QUANTUM_LIBRARY.Dim_Tipo_De_Pasaje;
+if object_id('SELECT_QUANTUM_LIBRARY.Dim_Proveedor') is not null
+	DROP TABLE SELECT_QUANTUM_LIBRARY.Dim_Proveedor;
