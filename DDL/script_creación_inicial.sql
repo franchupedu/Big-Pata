@@ -1,6 +1,8 @@
+-- Hay que fijarse de cambiar INT por Decimal en algunos
+
 USE GD1C2020;
 GO
-
+SELECT * FROM gd_esquema.Maestra
 -- Se crea el Schema 
 CREATE SCHEMA SELECT_QUANTUM_LIBRARY;
 GO
