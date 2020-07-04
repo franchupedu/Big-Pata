@@ -1,5 +1,8 @@
 USE GD1C2020;
 
+IF OBJECT_ID (N'dbo.cant_camas_vendidas', N'FN') IS NOT NULL  
+    DROP FUNCTION dbo.cant_camas_vendidas;  
+GO
 if object_id('SELECT_QUANTUM_LIBRARY.Fac_Venta') is not null
 	DROP TABLE SELECT_QUANTUM_LIBRARY.Fac_Venta;
 if object_id('SELECT_QUANTUM_LIBRARY.Fac_Compra') is not null

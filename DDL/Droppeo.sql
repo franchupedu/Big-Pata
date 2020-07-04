@@ -35,5 +35,8 @@ if object_id('SELECT_QUANTUM_LIBRARY.Tipo_Butaca') is not null
 if object_id('SELECT_QUANTUM_LIBRARY.Tipo_Habitacion') is not null
 	DROP TABLE SELECT_QUANTUM_LIBRARY.Tipo_Habitacion;
 
+IF EXISTS (SELECT name FROM sysobjects WHERE name='Migracion' AND type='p')
+	DROP PROCEDURE SELECT_QUANTUM_LIBRARY.Migracion
+GO
 
 DROP SCHEMA SELECT_QUANTUM_LIBRARY;
