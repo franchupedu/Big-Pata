@@ -3,6 +3,21 @@
 USE GD1C2020;
 GO
 
+CREATE FUNCTION cant_camas_vendidas (@descripcion nvarchar(255)) RETURNS int AS
+	BEGIN
+		RETURN
+	CASE @descripcion 
+	WHEN  'Base Simple' THEN 1
+	WHEN 'King' THEN 1
+	WHEN 'Base Doble' THEN 2
+	WHEN 'Base Triple' THEN 3
+	WHEN 'Base Cuadruple' THEN 4
+	ELSE 0
+	END
+END
+GO
+
+
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Dim_Tiempo (
   id_tiempo int IDENTITY (1,1),
   Año int NOT NULL,
@@ -113,6 +128,10 @@ CREATE TABLE SELECT_QUANTUM_LIBRARY.Fac_Compra (
 
 -- MIGRACION
 
+
+
+
+
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Tipo_Habitacion
 	SELECT DISTINCT codigo, descripcion
 	FROM SELECT_QUANTUM_LIBRARY.Tipo_Habitacion
@@ -147,3 +166,55 @@ INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Tipo_De_Pasaje
 	SELECT DISTINCT codigo, descripcion
 	FROM SELECT_QUANTUM_LIBRARY.Tipo_Butaca
 
+INSERT INTO SELECT_QUANTUM_LIBRARY.Fac_Compra
+	SELECT DISTINCT (SELECT id_tiempo FROM SELECT_QUANTUM_LIBRARY.Dim_Tiempo WHERE Año = YEAR(c.fecha) AND Mes = MONTH(c.fecha)), 
+					isnull((SELECT codigo FROM SELECT_QUANTUM_LIBRARY.Dim_Tipo_Habitacion WHERE descripcion = th.descripcion),0), 
+					(SELECT id_empresa FROM SELECT_QUANTUM_LIBRARY.Dim_Proveedor WHERE id_empresa = em.id_empresa), 
+					isnull((SELECT Codigo FROM SELECT_QUANTUM_LIBRARY.Dim_Tipo_De_Pasaje WHERE Codigo = tb.codigo),0), 
+					isnull((SELECT id_avion FROM SELECT_QUANTUM_LIBRARY.Dim_Avion WHERE id_avion = av.id_avion),0), 
+					isnull((SELECT id_ruta_aerea FROM SELECT_QUANTUM_LIBRARY.Dim_Ruta_Aerea WHERE id_ruta_aerea = ra.codigo_ruta_aerea),0),
+					isnull((SELECT id_ciudad FROM SELECT_QUANTUM_LIBRARY.Dim_Ciudad WHERE id_ciudad = ra.ciudad_origen),0), 
+					isnull((SELECT id_ciudad FROM SELECT_QUANTUM_LIBRARY.Dim_Ciudad WHERE id_ciudad = ra.ciudad_destino),0),
+					AVG(c.costo_total), 
+					SUM(c.costo_total)
+	FROM SELECT_QUANTUM_LIBRARY.Compra c JOIN SELECT_QUANTUM_LIBRARY.Estadia e ON c.id_compra = e.id_compra
+	JOIN SELECT_QUANTUM_LIBRARY.Habitacion h ON h.id_habitacion = e.id_habitacion 
+	JOIN SELECT_QUANTUM_LIBRARY.Tipo_Habitacion th ON h.tipo = th.codigo
+	JOIN SELECT_QUANTUM_LIBRARY.Empresa em ON em.id_empresa = c.id_empresa
+	JOIN SELECT_QUANTUM_LIBRARY.Pasaje p ON p.id_compra = c.id_compra
+	JOIN SELECT_QUANTUM_LIBRARY.Butaca b ON b.id_butaca = p.id_butaca
+	JOIN SELECT_QUANTUM_LIBRARY.Tipo_Butaca tb ON tb.codigo = b.tipo_de_butaca
+	JOIN SELECT_QUANTUM_LIBRARY.Avion av ON av.id_avion = b.id_avion 
+	JOIN SELECT_QUANTUM_LIBRARY.Vuelo v ON v.codigo_vuelo = p.codigo_vuelo
+	JOIN SELECT_QUANTUM_LIBRARY.Ruta_Aerea ra ON ra.id_vuelo = v.codigo_vuelo
+	GROUP BY MONTH(c.fecha), YEAR(c.fecha), th.codigo,th.descripcion,em.id_empresa,tb.codigo,av.id_avion,ra.codigo_ruta_aerea,ra.ciudad_destino,ra.ciudad_origen
+
+
+
+INSERT INTO SELECT_QUANTUM_LIBRARY.Fac_Venta
+  SELECT DISTINCT(SELECT id_cliente FROM SELECT_QUANTUM_LIBRARY.Dim_Cliente WHERE id_cliente = c.id_cliente),
+			 	 (SELECT codigo FROM SELECT_QUANTUM_LIBRARY.Dim_Tipo_Habitacion WHERE codigo = th.codigo),
+				 (SELECT id_tiempo FROM SELECT_QUANTUM_LIBRARY.Dim_Tiempo WHERE Año = YEAR(ndv.fecha) AND Mes = MONTH(ndv.fecha)),
+                 (SELECT id_ciudad FROM SELECT_QUANTUM_LIBRARY.Dim_Ciudad WHERE id_ciudad = ra.ciudad_origen) ,
+                 (SELECT id_ciudad FROM SELECT_QUANTUM_LIBRARY.Dim_Ciudad WHERE id_ciudad = ra.ciudad_destino),
+                 (SELECT id_ruta_aerea FROM SELECT_QUANTUM_LIBRARY.Dim_Ruta_Aerea WHERE id_ruta_aerea = ra.id_ruta_aerea),
+                 (SELECT id_avion FROM SELECT_QUANTUM_LIBRARY.Dim_Avion WHERE id_avion = av.id_avion),
+                 (SELECT Codigo FROM SELECT_QUANTUM_LIBRARY.Dim_Tipo_De_Pasaje WHERE Codigo = tb.codigo),
+				 AVG(ndv.precio_total),
+                 SUM(dbo.cant_camas_vendidas(th.descripcion)),
+                 COUNT(e.id_estadia), 
+                 COUNT(p.codigo_pasaje), 
+                 SUM( ndv.precio_total) 
+  FROM SELECT_QUANTUM_LIBRARY.Nota_De_Venta ndv 
+  JOIN SELECT_QUANTUM_LIBRARY.Cliente c ON c.id_cliente = ndv.id_cliente
+  JOIN SELECT_QUANTUM_LIBRARY.Estadia e ON e.id_nota_de_venta = ndv.id_nota_de_venta
+  JOIN SELECT_QUANTUM_LIBRARY.Habitacion h ON  e.id_habitacion = h.id_habitacion 
+  JOIN SELECT_QUANTUM_LIBRARY.Tipo_Habitacion th ON h.tipo = th.codigo
+  JOIN SELECT_QUANTUM_LIBRARY.Pasaje p ON p.id_nota_de_venta =ndv.id_nota_de_venta
+  JOIN SELECT_QUANTUM_LIBRARY.Butaca b ON b.id_butaca = p.id_butaca
+  JOIN SELECT_QUANTUM_LIBRARY.Tipo_Butaca tb ON tb.codigo = b.tipo_de_butaca
+  JOIN SELECT_QUANTUM_LIBRARY.Avion av ON av.id_avion = b.id_avion 
+  JOIN SELECT_QUANTUM_LIBRARY.Vuelo v ON v.codigo_vuelo = p.codigo_vuelo
+  JOIN SELECT_QUANTUM_LIBRARY.Ruta_Aerea ra ON ra.id_vuelo = v.codigo_vuelo
+  GROUP BY c.id_cliente,th.codigo,YEAR(ndv.fecha),MONTH(ndv.fecha),ra.id_ruta_aerea,av.id_avion,tb.codigo,ra.ciudad_destino,ra.ciudad_origen
+  
