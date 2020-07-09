@@ -81,11 +81,11 @@ CREATE TABLE SELECT_QUANTUM_LIBRARY.Fac_Venta (
   id_ruta_aerea INT NOT NULL,
   id_avion NVARCHAR (255) NOT NULL,
   id_tipo_de_pasaje INT NOT NULL,
-  precio_promedio INT,
+  precio_promedio decimal(18,2),
   cantidad_camas INT,
   habitaciones_vendidas INT,
   pasajes_vendidos INT,
-  ganancias INT,
+  ganancias decimal(18,2),
   PRIMARY KEY(id_cliente, id_tipoDeHabitacion, id_tiempo, id_ciudad_origen, id_ciudad_destino,
 				id_ruta_aerea, id_avion, id_tipo_de_pasaje),
   FOREIGN KEY (id_cliente) REFERENCES SELECT_QUANTUM_LIBRARY.Dim_Cliente (id_cliente),
@@ -110,8 +110,8 @@ CREATE TABLE SELECT_QUANTUM_LIBRARY.Fac_Compra (
   id_ruta_aerea INT NOT NULL,
   id_ciudad_origen INT NOT NULL,
   id_ciudad_destino INT NOT NULL,
-  precio_promedio INT,
-  precio_total INT,
+  precio_promedio decimal(18,2),
+  precio_total decimal(18,2),
 
   PRIMARY KEY(id_tiempo, id_tipoDeHabitacion, id_empresa, id_tipo_de_pasaje, id_avion, 
 				 id_ruta_aerea, id_ciudad_origen, id_ciudad_destino),
@@ -186,7 +186,7 @@ INSERT INTO SELECT_QUANTUM_LIBRARY.Fac_Compra
 					(SELECT id_empresa FROM SELECT_QUANTUM_LIBRARY.Dim_Proveedor WHERE id_empresa = em.id_empresa), 
 					isnull((SELECT Codigo FROM SELECT_QUANTUM_LIBRARY.Dim_Tipo_De_Pasaje WHERE Codigo = tb.codigo),0), 
 					isnull((SELECT id_avion FROM SELECT_QUANTUM_LIBRARY.Dim_Avion WHERE id_avion = av.id_avion),0), 
-					isnull((SELECT id_ruta_aerea FROM SELECT_QUANTUM_LIBRARY.Dim_Ruta_Aerea WHERE id_ruta_aerea = ra.codigo_ruta_aerea),0),
+					isnull((SELECT id_ruta_aerea FROM SELECT_QUANTUM_LIBRARY.Dim_Ruta_Aerea WHERE id_ruta_aerea = ra.id_ruta_aerea),0),
 					isnull((SELECT id_ciudad FROM SELECT_QUANTUM_LIBRARY.Dim_Ciudad WHERE id_ciudad = ra.ciudad_origen),0), 
 					isnull((SELECT id_ciudad FROM SELECT_QUANTUM_LIBRARY.Dim_Ciudad WHERE id_ciudad = ra.ciudad_destino),0),
 					AVG(c.costo_total), 
@@ -203,7 +203,7 @@ INSERT INTO SELECT_QUANTUM_LIBRARY.Fac_Compra
 	LEFT JOIN SELECT_QUANTUM_LIBRARY.Vuelo v ON v.codigo_vuelo = p.codigo_vuelo
 	LEFT JOIN SELECT_QUANTUM_LIBRARY.Ruta_Aerea ra ON ra.id_vuelo = v.codigo_vuelo
 	GROUP BY MONTH(c.fecha), YEAR(c.fecha), th.codigo,th.descripcion,em.id_empresa,tb.codigo,
-			av.id_avion,ra.codigo_ruta_aerea,ra.ciudad_destino,ra.ciudad_origen
+			av.id_avion,ra.id_ruta_aerea,ra.ciudad_destino,ra.ciudad_origen
 
 
 INSERT INTO SELECT_QUANTUM_LIBRARY.Fac_Venta

@@ -1,8 +1,7 @@
--- Hay que fijarse de cambiar INT por Decimal en algunos
 
 USE GD1C2020;
 GO
-SELECT * FROM gd_esquema.Maestra
+
 -- Se crea el Schema 
 CREATE SCHEMA SELECT_QUANTUM_LIBRARY;
 GO
@@ -124,7 +123,7 @@ id_compra INT IDENTITY (1,1),
 numero_compra INT NOT NULL,
 fecha DATE NOT NULL,
 id_empresa INT NOT NULL,
-costo_total INT NOT NULL,
+costo_total decimal(18,2) NOT NULL,
 FOREIGN KEY (id_empresa) REFERENCES SELECT_QUANTUM_LIBRARY.Empresa (id_empresa),
 PRIMARY KEY (id_compra)
 );
@@ -136,7 +135,7 @@ numero_venta INT NOT NULL,
 id_cliente INT NOT NULL,
 id_sucursal INT NOT NULL,
 fecha DATE NOT NULL,
-precio_total INT NOT NULL,
+precio_total decimal(18,2) NOT NULL,
 FOREIGN KEY (id_cliente) REFERENCES SELECT_QUANTUM_LIBRARY.Cliente (id_cliente),
 FOREIGN KEY (id_sucursal) REFERENCES SELECT_QUANTUM_LIBRARY.Sucursal (id_sucursal),
 PRIMARY KEY (id_nota_de_venta)
@@ -149,9 +148,9 @@ codigo_vuelo INT NOT NULL,
 fecha_compra DATE NOT NULL,
 id_butaca INT NOT NULL,
 id_compra INT NOT NULL,
-costo_compra INT NOT NULL,
+costo_compra decimal(18,2) NOT NULL,
 id_nota_de_venta INT,
-precio_venta INT NOT NULL,
+precio_venta decimal(18,2) NOT NULL,
 FOREIGN KEY (codigo_vuelo) REFERENCES SELECT_QUANTUM_LIBRARY.Vuelo (codigo_vuelo),
 FOREIGN KEY (id_butaca) REFERENCES SELECT_QUANTUM_LIBRARY.Butaca (id_butaca),
 FOREIGN KEY (id_compra) REFERENCES SELECT_QUANTUM_LIBRARY.Compra (id_compra),
@@ -166,9 +165,9 @@ codigo INT NOT NULL,
 fecha_inicio DATE NOT NULL,
 cantidad_noches INT NOT NULL,
 id_habitacion INT NOT NULL,
-precio_final INT NOT NULL,
+precio_final decimal(18,2) NOT NULL,
 id_compra INT NOT NULL,
-costo_compra_total INT NOT NULL,
+costo_compra_total decimal(18,2) NOT NULL,
 id_nota_de_venta INT,
 FOREIGN KEY (id_habitacion) REFERENCES SELECT_QUANTUM_LIBRARY.Habitacion (id_habitacion),
 FOREIGN KEY (id_compra) REFERENCES SELECT_QUANTUM_LIBRARY.Compra (id_compra),
