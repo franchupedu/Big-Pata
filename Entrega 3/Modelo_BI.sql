@@ -1,8 +1,8 @@
--- Hay que fijarse de cambiar INT por Decimal en algunos
 
 USE GD1C2020;
 GO
 
+-- Se crea una funcion para el calculo de la cantidad de camas vendidas
 CREATE FUNCTION cant_camas_vendidas (@descripcion nvarchar(255)) RETURNS int AS
 	BEGIN
 		RETURN
@@ -17,7 +17,8 @@ CREATE FUNCTION cant_camas_vendidas (@descripcion nvarchar(255)) RETURNS int AS
 END
 GO
 
-
+-- Se procede con la creacion de las tablas necesarias para la creacion del modelo BI
+-- Se crea la tabla Dimension Tiempo
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Dim_Tiempo (
   id_tiempo int IDENTITY (1,1),
   Año int NOT NULL,
@@ -25,24 +26,28 @@ CREATE TABLE SELECT_QUANTUM_LIBRARY.Dim_Tiempo (
   PRIMARY KEY (id_tiempo)
 );
 
+-- Se crea la tabla Dimension Tipo Habitacion
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Dim_Tipo_Habitacion (
   codigo int NOT NULL,
   descripcion NVARCHAR (255),
   PRIMARY KEY (codigo)
 );
 
+-- Se crea la tabla Dimension Proveedor
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Dim_Proveedor (
   id_empresa INT NOT NULL,
   nombre NVARCHAR (255) NOT NULL,
   PRIMARY KEY (id_empresa)
 );
 
+-- Se crea la tabla Dimension Avion
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Dim_Avion (
   id_avion NVARCHAR (255) NOT NULL,
   modelo NVARCHAR (255),
   PRIMARY KEY (id_avion)
 );
 
+-- Se crea la tabla Dimension Cliente
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Dim_Cliente (
   id_cliente INT NOT NULL,
   DNI INT NOT NULL,
@@ -54,24 +59,28 @@ CREATE TABLE SELECT_QUANTUM_LIBRARY.Dim_Cliente (
   PRIMARY KEY (id_cliente)
 );
 
+-- Se crea la tabla Dimension Ciudad
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Dim_Ciudad (
   id_ciudad INT NOT NULL,
   nombre NVARCHAR (255),
   PRIMARY KEY (id_ciudad)
 );
 
+-- Se crea la tabla Dimension Ruta Aerea
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Dim_Ruta_Aerea (
   id_ruta_aerea INT NOT NULL,
   Codigo INT,
   PRIMARY KEY (id_ruta_aerea)
 );
 
+-- Se crea la dimension Tipo de Pasaje
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Dim_Tipo_De_Pasaje (
   Codigo INT NOT NULL,
   descripcion NVARCHAR (255),
   PRIMARY KEY (codigo)
 );
 
+-- Se crea la tabla de hechos Fac_Venta
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Fac_Venta (
   id_cliente INT NOT NULL,
   id_tipoDeHabitacion INT NOT NULL,
@@ -100,7 +109,7 @@ CREATE TABLE SELECT_QUANTUM_LIBRARY.Fac_Venta (
 
 
 
-
+-- Se crea la tabla de Hechos Fac_Compra
 CREATE TABLE SELECT_QUANTUM_LIBRARY.Fac_Compra (
   id_tiempo INT NOT NULL,
   id_tipoDeHabitacion INT NOT NULL,
@@ -126,30 +135,39 @@ CREATE TABLE SELECT_QUANTUM_LIBRARY.Fac_Compra (
   
 );
 
--- MIGRACION
+-- A partir de aqui se finaliza con la creacion de las tablas necesarias para el modelo BI
 
+-- Se procede con la Migracion de los datos de la tabla maestra al modelo BI
 
+-- Se insertan todos los datos necesarios para la tabla  Dimension Tiempo, siendo los mismos el mes y año de las diferentes compras y ventas existentes
+-- El union que se observa fue utilizado para diferenciar los datos de las fechas entre la compra y la venta, evitando asi que se dieran fechas repetidas
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Tiempo
 	SELECT YEAR(fecha), MONTH(fecha) FROM SELECT_QUANTUM_LIBRARY.Compra
 	UNION 
 	SELECT YEAR(fecha), MONTH(fecha) FROM SELECT_QUANTUM_LIBRARY.Nota_De_Venta
 
+-- Se insertan todos los datos necesarios para la tabla Dimension Tipo Habitacion
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Tipo_Habitacion
 	SELECT DISTINCT codigo, descripcion
 	FROM SELECT_QUANTUM_LIBRARY.Tipo_Habitacion
 
+-- Este insert fue realizado para insertar el tipo de habitacion 0 para todo registro que tuviese sus datos en NULL, para que asi el mismo pueda ser evaluado en la tabla de hecho y asi poder diferenciar la estadia del pasaje 
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Tipo_Habitacion VALUES(0, NULL)
 
+-- Este insert inserta todos los datos necesarios en la tabla dimension proveedor
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Proveedor
 	SELECT DISTINCT id_empresa, nombre
 	FROM SELECT_QUANTUM_LIBRARY.Empresa
 
+-- Este insert inserta todos los datos necesarios en la tabla dimension avion
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Avion
 	SELECT DISTINCT id_avion, modelo
 	FROM SELECT_QUANTUM_LIBRARY.Avion
 
+-- Este insert cumple el mismo caso explicado previamente de Tipo Habitacion
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Avion VALUES(0, NULL)
 
+-- Este insert inserta todo dato relacionado con el Cliente dentro de la tabla Dimension Cliente
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Cliente
 	SELECT DISTINCT id_cliente, 
 	DNI,
@@ -160,26 +178,34 @@ INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Cliente
 	fecha_de_nacimiento
 	FROM SELECT_QUANTUM_LIBRARY.Cliente
 
+-- Este insert inserta todo dato relacionado con cada ciudad dentro de la tabla Dimension Ciudad
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Ciudad
 	SELECT DISTINCT id_ciudad, nombre
 	FROM SELECT_QUANTUM_LIBRARY.Ciudad
 
+-- En este insert se repite el mismo caso explicado previamente para Tipo Habitacion y Avion
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Ciudad VALUES(0, NULL)
 
+-- En este insert se procede a guardar todo dato relacionado con Ruta Aerea dentro de la tabla Dimension Ruta Aerea
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Ruta_Aerea
 	SELECT DISTINCT id_ruta_aerea, codigo_ruta_aerea
 	FROM SELECT_QUANTUM_LIBRARY.Ruta_Aerea
 
+-- En este insert se repite el mismo caso explicado previamente para Tipo Habitacion, Avion y Ciudad
+
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Ruta_Aerea VALUES(0, NULL)
 
+-- En este insert se procede a guardar todo dato relacionado al Tipo de pasaje dentro de la tabla Dimension Tipo de Pasaje
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Tipo_De_Pasaje
 	SELECT DISTINCT codigo, descripcion
 	FROM SELECT_QUANTUM_LIBRARY.Tipo_Butaca
 
-	
+-- En este insert se repite el mismo caso explicado previamente para Tipo Habitacion, Avion, Ciudad y Ruta Aerea
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Tipo_De_Pasaje VALUES(0, NULL)
 
-
+-- En este insert se procede a guardar todo dato relacionado a cada compra y se procede a guardarse en la tabla de Hechos de Fac_compra
+-- Ademas en este caso es donde se utilizan los insert explicados previamente que ocurren en las tablas dimensionales Tipo Habitacion, Avion, Ciudad y Ruta Aerea
+-- Fue necesario realizar un left join ya que era necesario traer toda compra existente, ya que la tabla compra comparte tanto los datos de los pasajes como la estadia, por lo que era necesario tambien traer todo dato NULL
 INSERT INTO SELECT_QUANTUM_LIBRARY.Fac_Compra
 	SELECT (SELECT id_tiempo FROM SELECT_QUANTUM_LIBRARY.Dim_Tiempo WHERE Año = YEAR(c.fecha) AND Mes = MONTH(c.fecha)), 
 					isnull((SELECT codigo FROM SELECT_QUANTUM_LIBRARY.Dim_Tipo_Habitacion WHERE descripcion = th.descripcion),0), 
@@ -205,7 +231,9 @@ INSERT INTO SELECT_QUANTUM_LIBRARY.Fac_Compra
 	GROUP BY MONTH(c.fecha), YEAR(c.fecha), th.codigo,th.descripcion,em.id_empresa,tb.codigo,
 			av.id_avion,ra.id_ruta_aerea,ra.ciudad_destino,ra.ciudad_origen
 
-
+-- En este insert se procede a guardar todo dato relacionado a cada venta y se procede a guardarse en la tabla de Hechos de Fac_Venta
+-- Ademas en este caso es donde se utilizan los insert explicados previamente que ocurren en las tablas dimensionales Tipo Habitacion, Avion, Ciudad y Ruta Aerea
+-- Fue necesario realizar un left join ya que era necesario traer toda venta existente, ya que la tabla venta comparte tanto los datos de los pasajes como la estadia, por lo que era necesario tambien traer todo dato NULL
 INSERT INTO SELECT_QUANTUM_LIBRARY.Fac_Venta
   SELECT DISTINCT(SELECT id_cliente FROM SELECT_QUANTUM_LIBRARY.Dim_Cliente WHERE id_cliente = c.id_cliente),
 			 	 ISNULL((SELECT codigo FROM SELECT_QUANTUM_LIBRARY.Dim_Tipo_Habitacion WHERE codigo = th.codigo), 0),
