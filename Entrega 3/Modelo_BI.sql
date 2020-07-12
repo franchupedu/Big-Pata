@@ -203,9 +203,9 @@ INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Tipo_De_Pasaje
 -- En este insert se repite el mismo caso explicado previamente para Tipo Habitacion, Avion, Ciudad y Ruta Aerea
 INSERT INTO SELECT_QUANTUM_LIBRARY.Dim_Tipo_De_Pasaje VALUES(0, NULL)
 
--- En este insert se procede a guardar todo dato relacionado a cada compra y se procede a guardarse en la tabla de Hechos de Fac_compra
+-- En este insert se procede a guardar todo dato relacionado a cada compra y se guarda en la tabla de Hechos de Fac_compra
 -- Ademas en este caso es donde se utilizan los insert explicados previamente que ocurren en las tablas dimensionales Tipo Habitacion, Avion, Ciudad y Ruta Aerea
--- Fue necesario realizar un left join ya que era necesario traer toda compra existente, ya que la tabla compra comparte tanto los datos de los pasajes como la estadia, por lo que era necesario tambien traer todo dato NULL
+-- Fue necesario realizar un left join para traer toda venta existente, ya que la tabla venta comparte tanto los datos de los pasajes como la estadia entonces habían campos en null que al hacer join provocaban pérdida de filas
 INSERT INTO SELECT_QUANTUM_LIBRARY.Fac_Compra
 	SELECT (SELECT id_tiempo FROM SELECT_QUANTUM_LIBRARY.Dim_Tiempo WHERE Año = YEAR(c.fecha) AND Mes = MONTH(c.fecha)), 
 					isnull((SELECT codigo FROM SELECT_QUANTUM_LIBRARY.Dim_Tipo_Habitacion WHERE descripcion = th.descripcion),0), 
@@ -231,9 +231,10 @@ INSERT INTO SELECT_QUANTUM_LIBRARY.Fac_Compra
 	GROUP BY MONTH(c.fecha), YEAR(c.fecha), th.codigo,th.descripcion,em.id_empresa,tb.codigo,
 			av.id_avion,ra.id_ruta_aerea,ra.ciudad_destino,ra.ciudad_origen
 
--- En este insert se procede a guardar todo dato relacionado a cada venta y se procede a guardarse en la tabla de Hechos de Fac_Venta
+-- En este insert se procede a guardar todo dato relacionado a cada venta y se guarda en la tabla de Hechos de Fac_Venta
 -- Ademas en este caso es donde se utilizan los insert explicados previamente que ocurren en las tablas dimensionales Tipo Habitacion, Avion, Ciudad y Ruta Aerea
--- Fue necesario realizar un left join ya que era necesario traer toda venta existente, ya que la tabla venta comparte tanto los datos de los pasajes como la estadia, por lo que era necesario tambien traer todo dato NULL
+-- Fue necesario realizar un left join para traer toda venta existente, ya que la tabla venta comparte tanto los datos de los pasajes como la estadia y 
+-- habían campos en null que al hacer join provocaba pérdida de filas.
 INSERT INTO SELECT_QUANTUM_LIBRARY.Fac_Venta
   SELECT DISTINCT(SELECT id_cliente FROM SELECT_QUANTUM_LIBRARY.Dim_Cliente WHERE id_cliente = c.id_cliente),
 			 	 ISNULL((SELECT codigo FROM SELECT_QUANTUM_LIBRARY.Dim_Tipo_Habitacion WHERE codigo = th.codigo), 0),
@@ -245,12 +246,14 @@ INSERT INTO SELECT_QUANTUM_LIBRARY.Fac_Venta
                  ISNULL((SELECT Codigo FROM SELECT_QUANTUM_LIBRARY.Dim_Tipo_De_Pasaje WHERE Codigo = tb.codigo), 0),
 				 AVG(ndv.precio_total),
                  SUM(dbo.cant_camas_vendidas(th.descripcion)),
-				 -- ESTO ES LO MISMO QUE UN COUNT, PERO TIRA UN 
+				 -- Esto es equivalente a COUNT, pero count provocaba un
 				 -- "Warning: Null value is eliminated by an aggregate or other SET operation in Aqua Data Studio"
-				 -- POR ESO LO CAMBIAMOS PARA QUE NO APAREZCA EL MISMO
+				 -- por eso lo cambiamos
                  SUM(CASE WHEN e.id_estadia IS NULL THEN 0 ELSE 1 END), 
                  SUM(CASE WHEN p.codigo_pasaje IS NULL THEN 0 ELSE 1 END), 
-                 SUM(ndv.precio_total) 
+				 SUM(CASE WHEN e.id_estadia IS NULL THEN p.precio_venta - p.costo_compra ELSE e.precio_final - e.costo_compra_total END) 
+
+
   FROM SELECT_QUANTUM_LIBRARY.Nota_De_Venta ndv 
   LEFT JOIN SELECT_QUANTUM_LIBRARY.Cliente c ON c.id_cliente = ndv.id_cliente
   LEFT JOIN SELECT_QUANTUM_LIBRARY.Estadia e ON e.id_nota_de_venta = ndv.id_nota_de_venta
